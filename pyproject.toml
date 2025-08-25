@@ -1,5 +1,5 @@
 [project]
-name = "fastapi-test"
+name = "fastapi_test"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -13,6 +13,4 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "pytest>=8.4.1",
-]
+dev = ["pytest>=8.4.1"]
