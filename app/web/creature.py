@@ -1,31 +1,31 @@
-from fastapi import APIRouter
-from models import Creature
-# import fake.creature as service
-import service.creature as service
+from fastapi import APIRouter, status, Response
+from typing import List
 
-router = APIRouter(prefix="/creature")
+from app.models.creature import Creature
+import app.service.creature as service
 
-@router.get("/")
+
+router = APIRouter(prefix="/creature",tags = ["Creature"])
+
+@router.get("", response_model=List[Creature])
 def get_all() -> list[Creature]:
     return service.get_all()
 
-@router.get("/{name}")
+@router.get("/{name}", response_model=Creature)
 def get_one(name:str) -> Creature:
     return service.get_one(name)
 
-# all the remaining endpoints do nothing yet:
-@router.post("/")
-def create(creature: Creature) -> Creature:
-    return service.create(creature)
+@router.post("", response_model=Creature, 
+                status_code=status.HTTP_201_CREATED)
+def create(creature: Creature, response:Response) -> Creature:
+    created = service.create(creature)
+    response.headers["Location"] = f"/creatures/{created.name}"
+    return created
 
-@router.patch("/{name}")
+@router.patch("/{name}", response_model=Creature)
 def modify(name: str, creature: Creature) -> Creature:
     return service.modify(name, creature)
 
-@router.put("/{name}")
-def replace(name: str, creature: Creature) -> Creature:
-    return service.replace(name, creature)
-
-@router.delete("/{name}")
-def delete(name: str):
-    return service.delete(name)
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+def delete(name: str) -> None:
+    service.delete(name)
