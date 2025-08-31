@@ -26,6 +26,6 @@ def create(creature: Creature, response:Response) -> Creature:
 def modify(name: str, creature: Creature) -> Creature:
     return service.modify(name, creature)
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_200_OK)
 def delete(name: str) -> None:
-    service.delete(name)
+    return service.delete(name)

@@ -76,8 +76,7 @@ def modify(name:str, explorer:Explorer):
         raise ValueError("name and explorer are required")
     qry = """
             update explorer
-            set country = :country,
-            name = :name, 
+            set country = :country, 
             description = :description
             where name = :name_orig                
         """
@@ -110,7 +109,7 @@ def delete(name :str) -> bool:
             raise DBError(f"Integrity error {e.sqlite_errorcode}") from e
         except Exception as e:
             raise DBError("DBerror during delete") from e            
-    return row_to_model(res)
+    return name
 
 
 

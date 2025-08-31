@@ -22,11 +22,11 @@ def create(explorer:Explorer, response:Response) -> Explorer:
     response.headers["Location"] = f"/explorers/{created.name}"
     return created
 
-@router.patch("/{name}", response_model=Explorer)
+@router.patch("/{name}", response_model=Explorer, status_code=status.HTTP_200_OK)
 def modify(name:str, explorer: Explorer) -> Explorer:
     return service.modify(name, explorer)
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_200_OK)
 def delete(name: str) -> None:
-    service.delete(name)
+    return service.delete(name)
 

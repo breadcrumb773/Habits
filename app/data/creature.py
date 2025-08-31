@@ -125,6 +125,6 @@ def delete(name:str) -> bool:
                 raise DBError(f"db integrity error {e.sqlite_errorname}") from e
         except Exception as e:
             raise DBError("DBerror during delete") from e            
-    return row_to_model(res)
+    return name
 
 
