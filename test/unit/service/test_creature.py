@@ -2,15 +2,15 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from models.creature import Creature
-from service import creature as code
+from models.habit import Habit
+from service import habit as code
 
-sample = Creature(
-    name = "Yeti", 
-    country="CN",
-    area="Himalayas", 
-    description="Hirsute Himalayan",
-    aka = "Abominable Snowman",
+sample = Habit(
+    name = "Test Habit", 
+    color="Test Color",
+    cadence="Test Cadence",
+    created_at="Test Created At",
+    owner_id="Test Owner Id",
 )
 
 def test_create():
@@ -18,9 +18,9 @@ def test_create():
     assert resp == sample
 
 def test_get_exists():
-    resp = code.get_one("Yeti")
+    resp = code.get_one("Test Llm")
     assert resp == sample
 
 def test_get_not_exists():
-    resp = code.get_one("not_exists")
+    resp = code.get_one("not_exists_llm")
     assert resp is None

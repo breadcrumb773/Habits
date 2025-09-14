@@ -5,3 +5,4 @@ uv.lock
 config/
 .env.*
 data_db/
+logs/
