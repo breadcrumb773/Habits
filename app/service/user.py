@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from jose import jwt, JWTError
 
 import app.data.user as data
-from app.models.user import User
+from app.models.user import User, UserPublic, UserCreate, UserChangePassword
 
 data.create_userdb()
 
@@ -13,21 +13,22 @@ SECRET_KEY="secret-key"
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated = "auto")
 
 
+
 def get_hash(plain:str):
     return pwd_context.hash(plain)
 
 def lookup_user(username:str) -> User|None:
-    if not (user := data.get(username)):
+    if not (user := data.get_one(username)):
         return None
     return user 
 
-def verify_password(plain:str, hash:str) -> bool:
-    return pwd_context.verify(plain, hash)
+def verify_password(plain:str, password_hash:str) -> bool:
+    return pwd_context.verify(plain, password_hash)
 
 def auth_user(name:str, plain:str) -> User|None:
     if not (user := lookup_user(name)):
         return None
-    if not verify_password(plain, user.hash):
+    if not verify_password(plain, user.password_hash):
         return None
     return user
 
@@ -54,17 +55,14 @@ def get_current_user(token:str) ->User|None:
         return None
     return user
 
-def get_all_users() -> list[User]:
-    return data.get_all_users()
+def create_user(payload: UserCreate) -> User:
+    return data.create(User(user_name=payload.user_name, password_hash=get_hash(payload.plain), status=True))
 
-def get_one_user(user_name:str) -> User:
-    return data.get_one_user(user_name)
+# def change_password(payload: UserChangePassword) -> User:
+#     return data.modify(user_name, user)
 
-def modify(user_name:str, user:User) -> User:
-    return data.modify(user_name, user)
-
-def create(user:User) -> User:
-    return data.create_user(user)
+def get_one(user_name:str) -> User:
+    return data.get_one(user_name)
 
 def delete(user_name:str) -> User:
     return data.delete_user(user_name)

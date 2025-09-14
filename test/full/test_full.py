@@ -3,30 +3,33 @@ import requests
 import copy
 import uuid
 
-from app.models.creature import Creature
-from app.models.explorer import Explorer
+from app.models.llm import Llm
 from app.data.errors import Duplicate
 
 
 BASE_URL = "http://localhost:8000"
 
 @pytest.fixture()
-def explorer():
+def llm():
     uid = uuid.uuid4().hex[:8]
-    return Explorer(
-        name = f"Test_Explorer_{uid}", 
-        country = "Test_Country",
-        description = "Test_Description"
+    return Llm(
+        name = f"Test_Llm_{uid}", 
+        api_key = "Test_Api_Key",
+        api_secret = "Test_Api_Secret",
+        api_url = "Test_Api_Url",
+        description = "Test_Description",
     )
 
 @pytest.fixture()
-def creature():
+def llm():
     uid = uuid.uuid4().hex[:8]
-    return Creature(name=f"Test_Creature_{uid}",
-             aka="Abominable Snowman",
-             country="CN",
-             area="Himalayas",
-             description="Hirsute Himalayan"
+    return Llm(name=f"Test_Llm_{uid}",
+             api_key="Test_Api_Key",
+             api_secret="Test_Api_Secret",
+             api_url="Test_Api_Url",
+             description="Test_Description",
+             
+             
     )
 
 def test_top_level():
@@ -35,83 +38,44 @@ def test_top_level():
     assert r.json() == {"message": "This is the top page"}
 
 @pytest.fixture()
-def create_explorer(explorer):
-    params = explorer.model_dump()
-    r = requests.post(f"{BASE_URL}/explorer", 
+def create_llm(llm):
+    params = llm.model_dump()
+    r = requests.post(f"{BASE_URL}/llm", 
                       json=params)
     print(f"{params = }")
-    data_explorer = r.json()
-    print(f"{data_explorer = }")
+    data_llm = r.json()
+    print(f"{data_llm = }")
     assert r.status_code == 201,r.status_code
-    assert r.headers["content-type"].startswith("application/json")
-    assert data_explorer["name"] == explorer.name, r.text
-    assert data_explorer["country"] == explorer.country, r.text
-    assert data_explorer["description"] == explorer.description, r.text
-    return data_explorer
+    assert data_llm["name"] == llm.name, r.text
+    assert data_llm["api_key"] == llm.api_key, r.text 
+    assert data_llm["api_url"] == llm.api_url, r.text
+    assert data_llm["description"] == llm.description, r.text
+    return data_llm
 
-@pytest.fixture()
-def create_creature(creature):
-    params = creature.model_dump()
-    r = requests.post(f"{BASE_URL}/creature", 
-                      json=params)
-    print(f"{params = }")
-    data_creature = r.json()
-    print(f"{data_creature = }")
-    assert r.status_code == 201,r.status_code
-    assert data_creature["name"] == creature.name, r.text
-    assert data_creature["country"] == creature.country, r.text 
-    assert data_creature["description"] == creature.description, r.text
-    return data_creature
-
-def test_create_explorer_duplicate(create_explorer):     
-        response = requests.post(f"{BASE_URL}/explorer", 
-                       json=create_explorer)
-        data_explorer = response.json()
-        assert response.headers["content-type"].startswith("application/json"),response.headers
-        assert response.status_code ==409, f"{response.status_code = }, {response.text = }"
-        assert "detail" in data_explorer, response.text
-
-def test_create_creature_duplicate(create_creature):     
-        response = requests.post(f"{BASE_URL}/creature", 
-                       json=create_creature)
-        data_creature = response.json()
+def test_create_llm_duplicate(create_llm):     
+            response = requests.post(f"{BASE_URL}/llm", 
+                       json=create_llm)
+        data_llm = response.json()
         assert response.headers["content-type"].startswith("application/json"),response.headers
         assert response.status_code == 409, f"{response.status_code = }, {response.text = }"
-        assert "detail" in data_creature, response.text
+        assert "detail" in data_llm, response.text
+        assert "detail" in data_llm, response.text
 
-def test_modify_creature(create_creature):
-     name = create_creature["name"]
-     changed_creature = copy.deepcopy(create_creature)
-     changed_creature["country"] = "Changed country"
-     print(f"test_modify_creature:{changed_creature = }")
-     response = requests.patch(f"{BASE_URL}/creature/{name}", json=changed_creature)
-     data_creature = response.json()
-     print(f"{data_creature = }")
+def test_modify_llm(create_llm):
+     name = create_llm["name"]
+     changed_llm = copy.deepcopy(create_llm)
+     changed_llm["api_key"] = "Changed api_key"
+     print(f"test_modify_llm:{changed_llm = }")
+     response = requests.patch(f"{BASE_URL}/llm/{name}", json=changed_llm)
+     data_llm = response.json()
+     print(f"{data_llm = }")
      assert response.status_code == 200, f"{response.status_code = }, {response.text = }"
-     assert data_creature["name"] == name, data_creature["name"]
-     assert data_creature["country"] == "Changed country", data_creature["country"]
+     assert data_llm["name"] == name, data_llm["name"]
+     assert data_llm["api_key"] == "Changed api_key", data_llm["api_key"]
 
-def test_modify_explorer(create_explorer):
-     name = create_explorer["name"]
-     changed_explorer = copy.deepcopy(create_explorer)
-     changed_explorer["country"] = "Changed country"
-     response = requests.patch(f"{BASE_URL}/explorer/{name}", json=changed_explorer, 
-                               headers={"accept": "application/json"})
-     data_explorer = response.json()
-     assert response.status_code == 200, f"{response.status_code = }, {response.text = }"
-     assert data_explorer["name"] == name, data_explorer["name"]
-     assert data_explorer["country"] == "Changed country", data_explorer["country"]
-
-def test_delete_explorer(create_explorer):
-     name = create_explorer["name"]
-     response = requests.delete(f"{BASE_URL}/explorer/{name}")
-     data = response.json()
-     assert response.status_code == 200, f"{response.status_code = }, {response.text}"
-     assert data == name, response.text
-
-def test_delete_creature(create_creature):
-     name = create_creature["name"]
-     response = requests.delete(f"{BASE_URL}/creature/{name}")
+def test_delete_llm(create_llm):
+     name = create_llm["name"]
+     response = requests.delete(f"{BASE_URL}/llm/{name}")
      data = response.json()
      assert response.status_code == 200, f"{response.status_code = }, {response.text}"
      assert data == name, response.text

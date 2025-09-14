@@ -6,3 +6,4 @@ def unauthed():
         detail="Incorrect username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
+

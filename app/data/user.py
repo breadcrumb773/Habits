@@ -11,18 +11,19 @@ def create_userdb(userdb_name:str| None=None, test_mode:bool=False):
         cursor_userdb.execute(
             """create table if not exists userdb(
                 name TEXT,
-                hash TEXT,
+                password_hash TEXT,
                 status BOOLEAN)""")
         
-def model_to_dict(user:User)->dict:
-    return user.model_dump()
+def model_to_row(user:User)->dict[str, any]:
+    return user.model_dump()   
 
-def dict_to_model(user:tuple) -> User:
-    name, hash, status = user
-    return User(name=name, hash=hash, status=status)
+def row_to_model(row:tuple) -> User:
+    name, password_hash, status = row
+    d = {"name": name, "password_hash": password_hash, "status": bool(status)}
+    return User(**d)
 
 def get_all_users() -> list[User]:
-    qry = """SELECT * FROM userdb"""
+    qry = """SELECT name, password_hash, status FROM userdb"""
     with get_user_db() as (conn_userdb, cursor_userdb):
             try:
                 cursor_userdb.execute(qry)                
@@ -30,13 +31,13 @@ def get_all_users() -> list[User]:
                 raise DBError("DBError during select all") from e
             else:
                 rows = list(cursor_userdb.fetchall())
-    return [dict_to_model(row) for row in rows]
+    return [row_to_model(row) for row in rows]
 
 def get_one_user(user_name:str) -> User:
     if not user_name: raise ValueError("Name is required")
 
-    params = {"name":user_name}
-    qry = """SELECT * FROM userdb where name = :username"""
+    params = {"username":user_name}
+    qry = """SELECT name, password_hash, status FROM userdb where name = :username"""
     with get_user_db() as (conn_userdb, cursor_userdb):
         try:
             cursor_userdb.execute(qry,params)
@@ -46,12 +47,12 @@ def get_one_user(user_name:str) -> User:
             row= cursor_userdb.fetchone()
     if row in None:
         raise Missing(msg=f"User {user_name} not found")
-    return dict_to_model(row)
+    return row_to_model(row)
 
-def create_user(user:User)-> User:
-    if not user: raise ValueError("User obj need")
-    qry = """INSERT into userdb VALUES(:name, :hash, :status)"""
-    params = model_to_dict()
+def create(user:User)-> User:
+    if not user: raise ValueError("user is required")
+    qry = """INSERT into userdb(user_name, hash, status) VALUES(:user_name, :hash, :status)"""
+    params = model_to_row(user)
     with get_user_db() as (conn_userdb, cursor_userdb):
         try:
             cursor_userdb.execute(qry,params)
@@ -73,12 +74,13 @@ def create_user(user:User)-> User:
         except sqlite3.Error as e:
             raise DBError(f"DBError dureing create") from e
         else:
-            return get_one_user(user.name)
+            return get_one_user(user.user_name)
+        
 def modify(user_name:str, user:User) -> User:
     qry = """update userdb 
-            set hash= :hash, status= :status
+            set password_hash= :password_hash, status= :status
             where name = :orig_name"""
-    params = model_to_dict(user)
+    params = model_to_row(user)
     params["orig_name"] = user_name
     with get_user_db as (conn_userdb, cursor_userdb):
         try:
@@ -93,7 +95,7 @@ def modify(user_name:str, user:User) -> User:
 
 def delete_user(user_name:str) -> bool:
     if not user_name: raise ValueError("name is required")
-    qry = """DELETE from userdb where name = :name"""
+    qry = """DELETE from userdb where user_name = :user_name"""
     params = {"name":user_name}
     with get_user_db() as (conn_userdb, cursor_userdb):
         try:

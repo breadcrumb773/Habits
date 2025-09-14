@@ -21,9 +21,9 @@ def load_dev_env(test_mode:bool = False):
 def get_db_path(db_name:str|None = None) -> str:
     if db_name:
         return db_name  
-    db_name = "criptid_second.db"
+    db_name = "second_db.db"
     db_path = str(data_dir / db_name)
-    final_path = os.getenv("CRYPTID_SQLITE_DB", db_path)
+    final_path = os.getenv("SQLITE_DB", db_path)
     return final_path
 
 @contextmanager
