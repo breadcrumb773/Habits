@@ -7,4 +7,6 @@ Stack:
  - SQL
  - Pydentic
  - OAuth2
+ - pytests
+
 
