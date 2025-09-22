@@ -8,5 +8,7 @@ Stack:
  - Pydentic
  - OAuth2
  - pytests
+ - uv
+
 
 
